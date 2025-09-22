@@ -1,0 +1,12 @@
+[package]
+name = "beatblox-audio-tools"
+version = "0.1.0"
+authors = ["Gabriel H. Barnard <gabriel.h.barnard@vanderbilt.edu>"]
+description = "A wasm library to help with audio processing in BeatBlox"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
