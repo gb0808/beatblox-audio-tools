@@ -3,25 +3,23 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct AudioBuffer {
-    sample_rate: usize,
-    data: Vec<u8>
+    pub sample_rate: usize,
+    pub size: usize,
+    data: Vec<f32>
 }
 
 impl AudioBuffer {
     pub fn new(raw_data: &[f32], sample_rate: Option<usize>) -> Self {
         let sample_rate = sample_rate.unwrap_or(DEFAULT_SAMPLE_RATE);
-        let mut data: Vec<u8> = Vec::new();
-        raw_data.iter().for_each(|frame: &f32| {
-            let bytes = frame.to_ne_bytes();
-            bytes.iter().for_each(|byte| data.push(*byte));
-        });
-        Self { sample_rate, data }
+        let size = raw_data.len();
+        let data = raw_data.to_vec();
+        Self { sample_rate, size, data }
     }
 }
 
 #[wasm_bindgen]
 impl AudioBuffer {
-    pub fn get_data(self) -> Vec<u8> {
+    pub fn get_data(self) -> Vec<f32> {
         self.data
     }
 }
