@@ -23,6 +23,35 @@ fn calculate_oscillator_sample(frame: f32, oscillator_type: &str) -> f32 {
     }
 }
 
+pub struct Lfo<'a> {
+    oscillator_type: &'a str,
+    frequency: f32,
+    sample_rate: usize,
+    curr: usize
+}
+
+impl<'a> Lfo<'a> {
+    pub fn new(oscillator_type: &'a str, frequency: f32, sample_rate: Option<usize>) -> Self {
+        Self {
+            oscillator_type,
+            frequency,
+            sample_rate: sample_rate.unwrap_or(DEFAULT_SAMPLE_RATE),
+            curr: 0
+        }
+    }
+}
+
+impl Iterator for Lfo<'_> {
+    type Item = f32;
+    fn next(&mut self) -> Option<Self::Item> {
+        let frame = self.frequency * self.curr as f32 / self.sample_rate as f32;
+        let sample = calculate_oscillator_sample(frame, self.oscillator_type);
+        self.curr += 1;
+        Some(sample)
+    }
+}
+
+
 pub struct Oscillator<'a> {
     oscillator_type: &'a str,
     midi_number: u8,
