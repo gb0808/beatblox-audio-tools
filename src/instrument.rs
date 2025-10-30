@@ -2,21 +2,18 @@ use crate::DEFAULT_SAMPLE_RATE;
 use crate::{buffer, oscillator};
 use wasm_bindgen::prelude::*;
 
-fn parse_amplitude(amplitude_text: &str) -> Vec<f32>  {
+fn parse_amplitude(amplitude_text: &str, duration: usize) -> Vec<f32>  {
     let details: Vec<&str> = amplitude_text.split('-').collect();
     if details[0] == "scalar" {
-        let amplitude: f32 = details[1].parse().unwrap();
-        let amplitude_buffer: [f32; DEFAULT_SAMPLE_RATE] = [amplitude; DEFAULT_SAMPLE_RATE];
-        Vec::from(amplitude_buffer)
+        let amplitude: f32 = details[1].parse().unwrap_or(1.0);
+        vec![amplitude; duration]
     } else if details[0] == "lfo" {
         let oscillator_type = details[1];
         let frequency: f32 = details[2].parse().unwrap();
         let lfo = oscillator::Lfo::new(oscillator_type, frequency, None);
-        let amplitude_buffer: Vec<f32> = lfo.take(DEFAULT_SAMPLE_RATE).collect();
-        amplitude_buffer
+        lfo.take(duration).collect()
     } else {
-        let default_buffer: [f32; DEFAULT_SAMPLE_RATE] = [0.0; DEFAULT_SAMPLE_RATE];
-        Vec::from(default_buffer)
+        vec![0.0; duration]
     }
 }
 
@@ -28,10 +25,10 @@ pub struct InstrumentSource {
 #[wasm_bindgen]
 impl InstrumentSource {
     pub fn from_oscillator(oscillator_type: &str, amplitude_text: &str) -> Self {
-        let amplitude_buffer = parse_amplitude(amplitude_text);
+        let amplitude_buffer = parse_amplitude(amplitude_text, DEFAULT_SAMPLE_RATE / 2);
         let create_buffer = |i| {
             let osc = oscillator::Oscillator::new(oscillator_type, i, None);
-            let source: Vec<f32> = osc.take(DEFAULT_SAMPLE_RATE).collect();
+            let source: Vec<f32> = osc.take(DEFAULT_SAMPLE_RATE / 2).collect();
             let mix_iter = source.iter().zip(amplitude_buffer.iter()).map(|(s, a)| s * a);
             let mix: Vec<f32> = mix_iter.collect();
             buffer::AudioBuffer::new(&mix, None)
